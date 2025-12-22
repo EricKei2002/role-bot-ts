@@ -1,3 +1,5 @@
+import type { ValidateResult } from "./types.js";
+
 export const INTRO_TEMPLATE_HINT = `【名前】
 （呼ばれたい名前）
 
@@ -63,13 +65,6 @@ function extractSectionValue(text: string, field: FieldDef, allHeaders: string[]
   const value = m[1].trim();
   return value;
 }
-
-type ValidateResult = {
-  ok: boolean;
-  errors: string[];
-  reason?: "NOT_TEMPLATE" | "MIN_CHARS" | "NG";
-  missingFields?: string[];
-};
 
 export function validateIntro(text: string, minChars: number): ValidateResult {
   const errors: string[] = [];

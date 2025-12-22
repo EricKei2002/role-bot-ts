@@ -1,5 +1,5 @@
 import { Client, EmbedBuilder, TextChannel } from "discord.js";
-import { env } from "../env.js";
+import { env } from "../config/env.js";
 
 export async function sendLogEmbed(client: Client, embed: EmbedBuilder) {
   try {
