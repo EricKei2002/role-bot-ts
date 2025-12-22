@@ -1,4 +1,4 @@
-import type { ValidateResult } from "./types.js";
+import type { ValidateResult } from "./types";
 
 export const INTRO_TEMPLATE_HINT = `【名前】
 （呼ばれたい名前）

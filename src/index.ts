@@ -1,6 +1,6 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import { introAuthHandler } from "./discord/handlers/introAuth.js";
-import { env } from "./config/env.js";
+import { introAuthHandler } from "./discord/handlers/introAuth";
+import { env } from "./config/env";
 
 const client = new Client({
   intents: [

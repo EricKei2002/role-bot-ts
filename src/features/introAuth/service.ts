@@ -1,7 +1,7 @@
 import { Client, EmbedBuilder, Message } from "discord.js";
-import { INTRO_TEMPLATE_HINT, validateIntro } from "./rules.js";
-import { env } from "../../config/env.js";
-import { sendLogEmbed } from "../../services/logger.js";
+import { INTRO_TEMPLATE_HINT, validateIntro } from "./rules";
+import { env } from "../../config/env";
+import { sendLogEmbed } from "../../services/logger";
 
 const lastHandled = new Map<string, number>();
 
