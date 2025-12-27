@@ -28,7 +28,7 @@ jobs:
 
       - name: Deploy to Raspberry Pi
         run: |
-          ssh eric@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             set -e
             cd ~/bots/role-bot-ts
             git pull origin main
