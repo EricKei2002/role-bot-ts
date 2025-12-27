@@ -19,6 +19,7 @@ jobs:
           oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TAILSCALE_OAUTH_SECRET }}
           tags: tag:ci
+
       - name: Setup SSH key
         shell: bash
         run: |
@@ -29,8 +30,16 @@ jobs:
           chmod 600 ~/.ssh/gh_actions_ekf
 
       - name: Deploy to Raspberry Pi
+        shell: bash
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/gh_actions_ekf ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          set -euo pipefail
+          USER="$(printf '%s' "$SSH_USER" | tr -d '\r\n' | xargs)"
+          HOST="$(printf '%s' "$SSH_HOST" | tr -d '\r\n' | xargs)"
+
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/gh_actions_ekf "${USER}@${HOST}" <<'EOF'
           set -e
           cd ~/bots/role-bot-ts
           git pull origin main
