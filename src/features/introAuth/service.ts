@@ -162,13 +162,6 @@ export function createIntroWelcomeHandler(client: Client) {
     const ch = await client.channels.fetch(env.introChannelId).catch(() => null);
     if (!ch || !ch.isTextBased()) return;
 
-    const embed = new EmbedBuilder()
-      .setTitle("🙌 自己紹介テンプレ")
-      .setDescription(INTRO_TEMPLATE_HINT);
-
-    await (ch as TextChannel).send({
-      content: `${member} ようこそ！まずは自己紹介をお願いします。`,
-      embeds: [embed],
-    });
+    await (ch as TextChannel).send(INTRO_TEMPLATE_HINT);
   };
 }
