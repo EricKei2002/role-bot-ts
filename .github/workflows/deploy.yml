@@ -39,4 +39,4 @@ jobs:
           pm2 restart role-bot
           pm2 save
           pm2 status
-      　EOF
+          EOF
