@@ -1,4 +1,4 @@
-import { Client, EmbedBuilder, Message } from "discord.js";
+import { Client, EmbedBuilder, GuildMember, Message, TextChannel } from "discord.js";
 import { INTRO_TEMPLATE_HINT, validateIntro } from "./rules";
 import { env } from "../../config/env";
 import { sendLogEmbed } from "../../services/logger";
@@ -153,5 +153,22 @@ export function createIntroHandler(client: Client) {
         )
         .setFooter({ text: `時刻: ${nowJST()}` })
     );
+  };
+}
+
+export function createIntroWelcomeHandler(client: Client) {
+  return async (member: GuildMember) => {
+    if (member.user.bot) return;
+    const ch = await client.channels.fetch(env.introChannelId).catch(() => null);
+    if (!ch || !ch.isTextBased()) return;
+
+    const embed = new EmbedBuilder()
+      .setTitle("🙌 自己紹介テンプレ")
+      .setDescription(INTRO_TEMPLATE_HINT);
+
+    await (ch as TextChannel).send({
+      content: `${member} ようこそ！まずは自己紹介をお願いします。`,
+      embeds: [embed],
+    });
   };
 }

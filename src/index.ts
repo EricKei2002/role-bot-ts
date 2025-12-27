@@ -1,5 +1,5 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import { introAuthHandler } from "./discord/handlers/introAuth";
+import { introAuthHandler, introAuthWelcomeHandler } from "./discord/handlers/introAuth";
 import { env } from "./config/env";
 
 const client = new Client({
@@ -13,4 +13,5 @@ const client = new Client({
 
 client.once("ready", () => console.log(`✅ Logged in as ${client.user?.tag}`));
 client.on("messageCreate", introAuthHandler(client));
+client.on("guildMemberAdd", introAuthWelcomeHandler(client));
 client.login(env.token);
