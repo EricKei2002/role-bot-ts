@@ -242,13 +242,10 @@ async function ensureIntroButtonMessage(client: Client) {
   const channel = ch as TextChannel;
 
   const recent = await channel.messages.fetch({ limit: 50 }).catch(() => null);
-  const existing = recent?.find((m) =>
-    m.author.id === client.user?.id &&
-    m.components.some((row) =>
-      row.components.some(
-        (c) => c.customId === INTRO_BUTTON_CUSTOM_ID
-      )
-    )
+  const existing = recent?.find(
+    (m) =>
+      m.author.id === client.user?.id &&
+      m.content.includes("自己紹介を入力してください。")
   );
   if (existing) return;
 
@@ -319,7 +316,7 @@ export function registerIntroModalHandlers(client: Client) {
     }
 
     if (interaction.isModalSubmit() && interaction.customId === INTRO_MODAL_CUSTOM_ID) {
-      if (!interaction.inGuild() || !interaction.member) {
+      if (!interaction.inGuild() || !interaction.member || !interaction.guild) {
         await interaction.reply({ content: "サーバー内で実行してください。", ephemeral: true });
         return;
       }
