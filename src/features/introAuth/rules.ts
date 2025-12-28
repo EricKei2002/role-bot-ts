@@ -107,3 +107,8 @@ export function validateIntro(text: string, minChars: number): ValidateResult {
 
   return { ok: errors.length === 0, errors };
 }
+
+export function extractIntroName(text: string): string | null {
+  const allHeaders = [NAME_FIELD, AGE_FIELD, GENDER_FIELD, PURPOSE_FIELD, ONE_FIELD].map((f) => f.header);
+  return extractSectionValue(text, NAME_FIELD, allHeaders);
+}

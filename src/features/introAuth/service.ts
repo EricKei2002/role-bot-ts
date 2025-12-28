@@ -11,7 +11,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from "discord.js";
-import { INTRO_TEMPLATE_HINT, validateIntro } from "./rules";
+import { INTRO_TEMPLATE_HINT, extractIntroName, validateIntro } from "./rules";
 import { env } from "../../config/env";
 import { sendLogEmbed } from "../../services/logger";
 
@@ -143,9 +143,14 @@ export function createIntroHandler(client: Client) {
       await message.react("✅");
     } catch {}
 
+    const introName = extractIntroName(message.content);
+    const successMessage = introName
+      ? `${introName}さん。自己紹介ありがとう！認証ロールを付与しました 🎉`
+      : "自己紹介ありがとう！認証ロールを付与しました 🎉";
+
     const successEmbed = new EmbedBuilder()
       .setTitle("✅ 認証完了！")
-      .setDescription("自己紹介ありがとう！認証ロールを付与しました 🎉")
+      .setDescription(successMessage)
       .addFields(
         { name: "ロール", value: `<@&${role.id}>`, inline: true },
         { name: "ユーザー", value: `<@${member.id}>`, inline: true }
@@ -355,8 +360,12 @@ export function registerIntroModalHandlers(client: Client) {
         });
       }
 
+      const replyMessage = name
+        ? `${name}さん。自己紹介ありがとう！認証完了です！`
+        : "自己紹介ありがとう！認証完了です！";
+
       await interaction.reply({
-        content: "自己紹介を投稿しました。認証完了です！",
+        content: replyMessage,
         ephemeral: true,
       });
 
