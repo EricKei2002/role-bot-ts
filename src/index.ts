@@ -3,12 +3,12 @@ import { introAuthHandler, introAuthWelcomeHandler } from "./discord/handlers/in
 import { env } from "./config/env";
 
 const client = new Client({
-  intents: [
+    intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
-  ],
+    ],
 });
 
 client.once("ready", () => console.log(`✅ Logged in as ${client.user?.tag}`));
