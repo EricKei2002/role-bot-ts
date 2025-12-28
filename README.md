@@ -1,39 +1,61 @@
 # 🤖 role-bot-ts（自己紹介認証Bot）
 
-自己紹介テンプレを投稿すると、自動でロールを付与する **Discord 認証Bot** です。  
-テンプレ不足時は不足項目をユーザーに通知し（⏱10秒後に自動削除）、**管理ログ（Embed）に履歴を残します**。
+自己紹介テンプレートを投稿すると、自動でロールを付与する **Discord 認証Bot** です。  
+テンプレートに不足がある場合は不足項目をユーザーに通知し、  
+**管理ログ（Embed）に履歴を残します**。
+
+本Botは **Raspberry Pi 上の自宅サーバー** で常時稼働しており、  
+**GitHub Actions + Tailscale + pm2** による CI/CD 運用を行っています。
 
 ---
 
-## ✨ できること
+## ✨ 機能一覧
 
-- ✅ **自己紹介テンプレの必須項目チェック**（名前 / 目的 / 一言）
-- 🧩 **任意項目対応**（年齢 / 性別）
-- 🚫 **NG判定**（URL / 空入力など）
-- 🎭 認証成功で **ロール付与 + ✅リアクション**
-- 💬 認証失敗で **不足項目を返信**（⏱10秒後に自動削除）
-- 🧾 **管理ログチャンネルにEmbedで保存**（DBなし）
-
----
-
-## 🧠 アーキテクチャ（3行）
-
-Discordイベント層と認証ロジックを分離した構成です。  
-自己紹介テンプレの解析・検証は feature 単位で管理しています。  
-永続化が不要なため、認証結果は管理ログEmbedとして保存しています。
+- ✅ **自己紹介テンプレの必須項目チェック**
+  - 名前 / 目的 / 一言
+- 🧩 **任意項目対応**
+  - 年齢 / 性別
+- 🚫 **NG判定**
+  - URL / 空入力 / 無効フォーマット
+- 🎭 **認証成功時**
+  - ロール付与 + ✅リアクション
+- 💬 **認証失敗時**
+  - 不足項目を返信（⏱10秒後に自動削除）
+- 🧾 **管理ログ**
+  - 管理チャンネルに Embed で履歴保存（DBなし）
 
 ---
 
-## 🗂 ディレクトリ構成（短縮版）
+## 🧠 アーキテクチャ概要
+
+- Discordイベント処理と認証ロジックを分離
+- 認証ロジックは feature 単位で管理
+- Discord 依存を薄くし、単体テスト可能な設計
+
+永続化が不要なため、  
+**認証結果は管理ログEmbedを履歴として利用**しています。
+
+---
+
+## 🗂 ディレクトリ構成
 
 ```txt
 src/
-  index.ts
-  discord/          # Discordイベント処理（薄く）
+  index.ts                  # エントリーポイント
+  config/
+    env.ts                  # 環境変数管理
+  discord/
+    handlers/
+      introAuth.ts          # Discordイベント登録（薄い層）
   features/
-    introAuth/      # 自己紹介認証ロジック（本体）
-  services/         # 共通処理（ログ送信・ロール付与など）
-  utils/            # 汎用関数
+    introAuth/
+      rules.ts              # テンプレ定義・検証ルール
+      rules.test.ts         # 単体テスト（Vitest）
+      service.ts            # 認証ロジック本体
+      types.ts              # feature専用型
+  services/
+    logger.ts               # 管理ログ送信（Embed）
+  dist/
 
 
 ⸻
@@ -55,15 +77,15 @@ Eric
 【一言】
 よろしく！
 
-✅ 必須 / 任意
+必須 / 任意
 	•	必須：【名前】 / 【目的】 / 【一言】
 	•	任意：【年齢】 / 【性別】
 
 ⸻
 
 🧪 テスト
-
-Vitest を使用し、Discordに依存しない認証ロジックを feature単位で単体テストしています。
+	•	Vitest を使用
+	•	Discord に依存しない認証ロジックを単体テスト
 
 npm run test
 
@@ -78,23 +100,25 @@ npm install
 
 2) 環境変数（.env）
 
-.env.example をコピーして .env を作成し、IDを埋めてください。
-	•	DISCORD_TOKEN
-	•	GUILD_ID
-	•	INTRO_CHANNEL_ID
-	•	MEMBER_ROLE_ID
-	•	LOG_CHANNEL_ID
-	•	MIN_JOIN_MINUTES（任意：参加から何分後に認証OKにするか）
+.env.example をコピーして .env を作成してください。
+
+DISCORD_TOKEN=
+GUILD_ID=
+INTRO_CHANNEL_ID=
+MEMBER_ROLE_ID=
+LOG_CHANNEL_ID=
+MIN_JOIN_MINUTES= # 任意（参加から何分後に認証可能にするか）
+
 
 ⸻
 
 ▶️ 起動方法
 
-🧑‍💻 開発（ホット実行）
+🧑‍💻 開発（ホットリロード）
 
 npm run dev
 
-🏭 本番（ビルドして起動）
+🏭 本番
 
 npm run build
 npm run start
@@ -107,6 +131,31 @@ npm run start:pm2
 
 ⸻
 
+🖥️ 運用構成（自宅サーバー）
+	•	Raspberry Pi（Linux）
+	•	pm2
+	•	プロセス常駐管理・自動再起動
+	•	Tailscale
+	•	GitHub Actions から安全に自宅サーバーへ接続
+	•	GitHub Actions
+	•	main ブランチ push で自動デプロイ
+	•	SSH 経由でビルド・再起動
+
+CI/CD フロー
+
+GitHub Push
+  ↓
+GitHub Actions
+  ↓
+Tailscale 接続
+  ↓
+Raspberry Pi (SSH)
+  ↓
+npm ci → build → pm2 restart
+
+
+⸻
+
 🔐 Botに必要な権限
 
 最低限おすすめ：
@@ -114,23 +163,17 @@ npm run start:pm2
 	•	✅ Send Messages
 	•	✅ Read Message History
 	•	✅ Add Reactions
-	•	✅ Manage Roles（ロール付与）
-	•	✅ Manage Messages（返信の自動削除に必要）
-	•	✅ Embed Links（管理ログをEmbedで出す）
+	•	✅ Manage Roles
+	•	✅ Manage Messages
+	•	✅ Embed Links
 
 ⸻
 
 🧰 設計上の工夫
-	•	🧩 feature単位で機能をまとめ、修正・追加がしやすい構成
-	•	🧪 Discord依存を薄くして、ロジックを単体テスト可能に
-	•	🗃 DBを使わず、管理ログ（Embed）を履歴保存として活用
-
-⸻
-
-🗺 今後の拡張（予定）
-	•	✅ #rules 既読リアクション必須の 二段階認証
-	•	🚫 NG判定ルールの強化（招待リンク・メンション等）
-	•	🏢 複数サーバー対応（Guildごと設定）
+	•	🧩 feature 単位で機能を分離し、拡張・修正しやすい
+	•	🧪 Discord 依存を薄くし、ロジックを単体テスト可能に
+	•	🗃 DB を使わず、管理ログ Embed を履歴として活用
+	•	🖥 自宅サーバー × CI/CD による実運用経験
 
 ⸻
 
