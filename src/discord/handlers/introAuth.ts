@@ -1,4 +1,4 @@
-import { createIntroHandler, createIntroWelcomeHandler } from "../../features/introAuth/service";
+import { createIntroHandler, registerIntroWelcomeHandler } from "../../features/introAuth/service";
 
 export const introAuthHandler = createIntroHandler;
-export const introAuthWelcomeHandler = createIntroWelcomeHandler;
+export const introAuthWelcomeHandler = registerIntroWelcomeHandler;

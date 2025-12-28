@@ -13,5 +13,5 @@ const client = new Client({
 
 client.once("ready", () => console.log(`✅ Logged in as ${client.user?.tag}`));
 client.on("messageCreate", introAuthHandler(client));
-client.on("guildMemberAdd", introAuthWelcomeHandler(client));
+introAuthWelcomeHandler(client);
 client.login(env.token);

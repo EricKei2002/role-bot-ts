@@ -1,4 +1,4 @@
-import { Client, EmbedBuilder, GuildMember, Message, TextChannel } from "discord.js";
+import { Client, EmbedBuilder, Events, Message, TextChannel } from "discord.js";
 import { INTRO_TEMPLATE_HINT, validateIntro } from "./rules";
 import { env } from "../../config/env";
 import { sendLogEmbed } from "../../services/logger";
@@ -156,12 +156,42 @@ export function createIntroHandler(client: Client) {
   };
 }
 
-export function createIntroWelcomeHandler(client: Client) {
-  return async (member: GuildMember) => {
+export function registerIntroWelcomeHandler(client: Client) {
+  client.on(Events.GuildMemberAdd, async (member) => {
     if (member.user.bot) return;
     const ch = await client.channels.fetch(env.introChannelId).catch(() => null);
     if (!ch || !ch.isTextBased()) return;
 
-    await (ch as TextChannel).send(INTRO_TEMPLATE_HINT);
-  };
+    const embed = new EmbedBuilder()
+      .setTitle("📝 自己紹介テンプレート")
+      .setDescription(
+        [
+          "以下をコピペして、自己紹介をお願いします👇",
+          "",
+          "```",
+          "【名前】",
+          "（呼ばれたい名前）",
+          "",
+          "【年齢】（任意）",
+          "20 / 25 / 非公開 など",
+          "",
+          "【性別】（任意）",
+          "男 / 女 / 非公開 など",
+          "",
+          "【目的】",
+          "このサーバーに参加した理由",
+          "",
+          "【一言】",
+          "自由欄",
+          "```",
+        ].join("\n")
+      )
+      .setColor(0xff6b6b)
+      .setFooter({ text: "※ルール確認後に投稿してください" });
+
+    await (ch as TextChannel).send({
+      content: `${member} さん、自己紹介をお願いします！`,
+      embeds: [embed],
+    });
+  });
 }
