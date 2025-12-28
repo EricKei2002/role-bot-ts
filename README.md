@@ -77,7 +77,7 @@
 ---
 
 ## 🗂 ディレクトリ構成
-
+```txt
 src/
   index.ts                  # エントリーポイント
   config/
@@ -95,16 +95,16 @@ src/
     logger.ts               # 管理ログ送信（Embed）
   dist/
 
-
+```
 ⸻
 
 🧪 テスト
 	•	Vitest を使用
 	•	Discord に依存しない認証ロジックを単体テスト
-
+```txt
 npm run test
 
-
+```
 ⸻
 
 🚀 セットアップ
@@ -116,7 +116,7 @@ npm install
 2) 環境変数（.env）
 
 .env.example をコピーして .env を作成してください。
-
+```txt
 DISCORD_TOKEN=
 GUILD_ID=
 INTRO_CHANNEL_ID=
@@ -124,25 +124,25 @@ MEMBER_ROLE_ID=
 LOG_CHANNEL_ID=
 MIN_JOIN_MINUTES= # 任意：参加から何分後に認証可能にするか
 
-
+```
 ⸻
 
 ▶️ 起動方法
 
 🧑‍💻 開発
-
+```txt
 npm run dev
-
+```
 🏭 本番
-
+```txt
 npm run build
 npm run start
-
+```
 🟩 pm2（24/7運用）
-
+```txt
 npm run build
 npm run start:pm2
-
+```
 
 ⸻
 
