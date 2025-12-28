@@ -78,7 +78,6 @@
 
 ## 🗂 ディレクトリ構成
 
-```txt
 src/
   index.ts                  # エントリーポイント
   config/
