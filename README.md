@@ -156,7 +156,7 @@ npm run start:pm2
 	•	main ブランチ push で自動デプロイ
 
 CI/CD フロー
-
+```txt
 GitHub Push
   ↓
 GitHub Actions
@@ -166,7 +166,7 @@ Tailscale 接続
 Raspberry Pi（SSH）
   ↓
 npm ci → build → pm2 restart
-
+```
 
 ⸻
 
