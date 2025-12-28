@@ -1,5 +1,5 @@
 import { Client, Events, GatewayIntentBits } from "discord.js";
-import { introAuthHandler, introAuthWelcomeHandler } from "./discord/handlers/introAuth";
+import { introAuthHandler, introAuthModalHandler, introAuthWelcomeHandler } from "./discord/handlers/introAuth";
 import { env } from "./config/env";
 
 const client = new Client({
@@ -14,4 +14,5 @@ const client = new Client({
 client.once(Events.ClientReady, () => console.log(`✅ Logged in as ${client.user?.tag}`));
 client.on(Events.MessageCreate, introAuthHandler(client));
 introAuthWelcomeHandler(client);
+introAuthModalHandler(client);
 client.login(env.token);

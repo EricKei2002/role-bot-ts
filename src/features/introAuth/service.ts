@@ -1,4 +1,16 @@
-import { Client, EmbedBuilder, Events, Message, TextChannel } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  Client,
+  EmbedBuilder,
+  Events,
+  Message,
+  ModalBuilder,
+  TextChannel,
+  TextInputBuilder,
+  TextInputStyle,
+} from "discord.js";
 import { INTRO_TEMPLATE_HINT, validateIntro } from "./rules";
 import { env } from "../../config/env";
 import { sendLogEmbed } from "../../services/logger";
@@ -193,5 +205,208 @@ export function registerIntroWelcomeHandler(client: Client) {
       content: `${member} さん、自己紹介をお願いします！`,
       embeds: [embed],
     });
+  });
+}
+
+const INTRO_BUTTON_CUSTOM_ID = "introAuth:openModal";
+const INTRO_MODAL_CUSTOM_ID = "introAuth:submit";
+
+function buildIntroText(fields: {
+  name: string;
+  age?: string;
+  gender?: string;
+  purpose: string;
+  one: string;
+}) {
+  return [
+    "【名前】",
+    fields.name,
+    "",
+    "【年齢】（任意）",
+    fields.age ?? "",
+    "",
+    "【性別】（任意）",
+    fields.gender ?? "",
+    "",
+    "【目的】",
+    fields.purpose,
+    "",
+    "【一言】",
+    fields.one,
+  ].join("\n");
+}
+
+async function ensureIntroButtonMessage(client: Client) {
+  const ch = await client.channels.fetch(env.introChannelId).catch(() => null);
+  if (!ch || !ch.isTextBased()) return;
+  const channel = ch as TextChannel;
+
+  const recent = await channel.messages.fetch({ limit: 50 }).catch(() => null);
+  const existing = recent?.find((m) =>
+    m.author.id === client.user?.id &&
+    m.components.some((row) =>
+      row.components.some(
+        (c) => c.customId === INTRO_BUTTON_CUSTOM_ID
+      )
+    )
+  );
+  if (existing) return;
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(INTRO_BUTTON_CUSTOM_ID)
+      .setLabel("自己紹介を書く")
+      .setStyle(ButtonStyle.Primary)
+  );
+
+  await channel.send({
+    content: "ボタンを押して自己紹介を入力してください。",
+    components: [row],
+  });
+}
+
+export function registerIntroModalHandlers(client: Client) {
+  client.once(Events.ClientReady, async () => {
+    await ensureIntroButtonMessage(client);
+  });
+
+  client.on(Events.InteractionCreate, async (interaction) => {
+    if (interaction.isButton() && interaction.customId === INTRO_BUTTON_CUSTOM_ID) {
+      const modal = new ModalBuilder()
+        .setCustomId(INTRO_MODAL_CUSTOM_ID)
+        .setTitle("自己紹介フォーム");
+
+      const nameInput = new TextInputBuilder()
+        .setCustomId("name")
+        .setLabel("名前（呼ばれたい名前）")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
+
+      const ageInput = new TextInputBuilder()
+        .setCustomId("age")
+        .setLabel("年齢（任意）")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(false);
+
+      const genderInput = new TextInputBuilder()
+        .setCustomId("gender")
+        .setLabel("性別（任意）")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(false);
+
+      const purposeInput = new TextInputBuilder()
+        .setCustomId("purpose")
+        .setLabel("参加目的")
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true);
+
+      const oneInput = new TextInputBuilder()
+        .setCustomId("one")
+        .setLabel("一言")
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true);
+
+      modal.addComponents(
+        new ActionRowBuilder<TextInputBuilder>().addComponents(nameInput),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(ageInput),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(genderInput),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(purposeInput),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(oneInput)
+      );
+
+      await interaction.showModal(modal);
+      return;
+    }
+
+    if (interaction.isModalSubmit() && interaction.customId === INTRO_MODAL_CUSTOM_ID) {
+      if (!interaction.inGuild() || !interaction.member) {
+        await interaction.reply({ content: "サーバー内で実行してください。", ephemeral: true });
+        return;
+      }
+
+      const name = interaction.fields.getTextInputValue("name").trim();
+      const age = interaction.fields.getTextInputValue("age").trim();
+      const gender = interaction.fields.getTextInputValue("gender").trim();
+      const purpose = interaction.fields.getTextInputValue("purpose").trim();
+      const one = interaction.fields.getTextInputValue("one").trim();
+
+      const introText = buildIntroText({
+        name,
+        age: age || undefined,
+        gender: gender || undefined,
+        purpose,
+        one,
+      });
+
+      const validation = validateIntro(introText, env.minChars);
+      if (!validation.ok) {
+        const missing = validation.missingFields?.join(" / ") ?? "";
+        await interaction.reply({
+          content: `必須項目が不足しています: ${missing || "不明"}`,
+          ephemeral: true,
+        });
+        return;
+      }
+
+      const guild = interaction.guild;
+      const member = await guild.members.fetch(interaction.user.id);
+      const role = guild.roles.cache.get(env.memberRoleId);
+      if (!role) {
+        await interaction.reply({ content: "認証ロールが設定されていません。", ephemeral: true });
+        return;
+      }
+
+      if (!member.roles.cache.has(role.id)) {
+        try {
+          await member.roles.add(role);
+        } catch (error) {
+          await interaction.reply({
+            content: "ロール付与に失敗しました。運営に確認してください。",
+            ephemeral: true,
+          });
+          await sendLogEmbed(
+            client,
+            new EmbedBuilder()
+              .setTitle("🔴 ロール付与失敗（モーダル）")
+              .setDescription("BOT権限（Manage Roles / ロール位置）やロールIDを確認してください。")
+              .addFields(
+                { name: "ユーザー", value: `${member.user.tag} (<@${member.id}>)` },
+                { name: "付与ロール", value: `<@&${role.id}>` }
+              )
+              .setFooter({ text: `時刻: ${nowJST()}` })
+          );
+          return;
+        }
+      }
+
+      const ch = await client.channels.fetch(env.introChannelId).catch(() => null);
+      if (ch && ch.isTextBased()) {
+        await (ch as TextChannel).send({
+          content: `<@${member.id}>`,
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("🙌 自己紹介")
+              .setDescription(introText),
+          ],
+        });
+      }
+
+      await interaction.reply({
+        content: "自己紹介を投稿しました。認証完了です！",
+        ephemeral: true,
+      });
+
+      await sendLogEmbed(
+        client,
+        new EmbedBuilder()
+          .setTitle("🟢 認証成功（モーダル）")
+          .addFields(
+            { name: "ユーザー", value: `${member.user.tag} (<@${member.id}>)` },
+            { name: "チャンネル", value: `<#${env.introChannelId}>`, inline: true },
+            { name: "付与ロール", value: `<@&${role.id}>`, inline: true }
+          )
+          .setFooter({ text: `時刻: ${nowJST()}` })
+      );
+    }
   });
 }
