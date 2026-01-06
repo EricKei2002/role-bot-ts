@@ -101,42 +101,42 @@ dist/
 🧪 テスト
 	•	Vitest を使用
 	•	Discord に依存しない認証ロジックを単体テスト
-
+```txt
 npm run test
-
+```
 
 ⸻
 
 🚀 セットアップ（ローカル開発）
 
 1) インストール
-
+```txt
 npm install
-
+```
 2) 環境変数
 
 .env.example をコピーして .env を作成してください。
-
+```txt
 DISCORD_TOKEN=
 GUILD_ID=
 INTRO_CHANNEL_ID=
 MEMBER_ROLE_ID=
 LOG_CHANNEL_ID=
 MIN_JOIN_MINUTES= # 任意：参加から何分後に認証可能にするか
-
+```
 
 ⸻
 
 ▶️ 起動方法
 
 🧑‍💻 開発
-
+```txt
 npm run dev
-
+```
 🏭 本番（Docker）
-
+```txt
 docker compose up -d --build
-
+```
 ※ 本番環境では /etc/role-bot/env を使用し、
 トークンはリポジトリや CI ログに露出しない構成にしています。
 
@@ -152,7 +152,7 @@ docker compose up -d --build
 	•	main ブランチ push で自動デプロイ
 
 CI/CD フロー
-
+```txt
 GitHub Push
   ↓
 GitHub Actions
@@ -162,7 +162,7 @@ Tailscale 接続
 Raspberry Pi（SSH）
   ↓
 docker compose up -d --build
-
+```
 
 ⸻
 
