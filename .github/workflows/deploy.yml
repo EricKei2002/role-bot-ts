@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: deploy-role-bot
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -40,12 +44,14 @@ jobs:
           HOST="$(printf '%s' "$SSH_HOST" | tr -d '\r\n' | xargs)"
 
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/gh_actions_ekf "${USER}@${HOST}" <<'EOF'
-          set -e
-          cd ~/bots/role-bot-ts
-          git pull origin main
-          npm ci
-          npm run build
-          pm2 restart role-bot
-          pm2 save
-          pm2 status
+            set -euo pipefail
+            cd ~/bots/role-bot-ts
+            git pull origin main
+
+            # Dockerでビルド＆起動（PM2不要）
+            docker compose up -d --build
+
+            # 動作確認（CIログに残る）
+            docker ps | head -n 20
+            docker logs --tail 40 role-bot
           EOF
