@@ -100,6 +100,10 @@ export function createIntroHandler(client: Client) {
         });
       }
 
+      if (validation.reason === "NG") {
+        await message.delete().catch(() => {});
+      }
+
       await sendLogEmbed(
         client,
         new EmbedBuilder()
@@ -368,6 +372,16 @@ export function registerIntroModalHandlers(client: Client) {
         content: replyMessage,
         ephemeral: true,
       });
+
+      // ボタンのメッセージを削除して、最下部に再投稿（常に一番下にするため）
+      try {
+        if (interaction.message) {
+          await interaction.message.delete();
+        }
+      } catch (err) {
+        console.error("Failed to delete button message:", err);
+      }
+      await ensureIntroButtonMessage(client);
 
       await sendLogEmbed(
         client,
