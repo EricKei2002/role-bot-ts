@@ -190,5 +190,3 @@ GitHub: https://github.com/EricKei2002
 
 ⸻
 
-
-ここまで行くと、企業受けかなり良くなるよ。
