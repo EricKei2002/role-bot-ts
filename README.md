@@ -77,7 +77,7 @@ Docker / Docker Compose + GitHub Actions + Tailscale による
 ⸻
 
 🗂 ディレクトリ構成
-
+```txt
 src/
   index.ts                  # エントリーポイント
   config/
@@ -94,7 +94,7 @@ src/
   services/
     logger.ts               # 管理ログ送信（Embed）
 dist/
-
+```
 
 ⸻
 
