@@ -12,13 +12,20 @@ TypeScriptによる堅牢な型安全性と、Discord.js v14のモダンな機�
 - **Rule-Based Validation**: `introAuth` モジュールにより、自己紹介文がコミュニティの規定（文字数、必須キーワードなど）を満たしているかを厳密にチェックします。
 - **Auto Role Assignment**: 検証を通過したユーザーに対し、自動的に「認証済みロール」を付与。手動での承認フローを完全に排除し、即座にコミュニティへの参加を可能にします。
 - **Feedback System**: 不適切な投稿に対しては、具体的な改善点をフィードバック。ユーザーの再投稿をスムーズに促します。
-- **Self-Hosted Operation**: 本Botは自宅の Raspberry Pi サーバー上で 24/7 稼働しており、実運用を前提とした設計・デプロイ・監視を行っています。
 - **Database-less Logging**: 管理ログ（認証成功 / 失敗）はデータベースを使用せず、Discordの管理チャンネルに Embed 形式で保存する設計を採用しています。これにより、構成をシンプルに保ちつつ、運用上必要な 履歴を確実に確認できます。
 
-### 2. 高可用性と監視 (Reliability & Monitoring)
+### 2. 高可用性とサーバー運用 (Reliability & Server Operation)
 
-- **Docker Containerization**: アプリケーションをコンテナ化することで、環境差異を排除し、どこでも安定して動作するポータビリティを実現しています。
-- **Type Safety**: 全面的にTypeScriptを採用することで、開発時のバグ混入を未然に防ぎ、安定した動作を保証します。
+- **24/7 Home Server**: 自宅の **Raspberry Pi** 上に構築された Linux 環境で、24時間365日の安定稼働を実現しています。
+- **Secure Remote Management**: **Tailscale** によるメッシュVPNを構築。外部ネットワークからもセキュアな SSH 接続を維持し、メンテナンス性を確保しています。
+- **Docker Containerization**: 実行環境をコンテナ化することで、OSに依存しないポータビリティを確保。開発環境から実運用サーバーへのデプロイをシームレスに行います。
+- **Type Safety**: TypeScript による厳密な型定義により、実行時の予期せぬエラーを最小限に抑え、信頼性の高いシステムを提供します。
+
+### 3. CI/CD & デプロイメント (CI/CD & Deployment)
+
+- **Automated Pipeline**: GitHub Actions を活用し、ビルド・テスト・デプロイの自動化を実現。
+- **Container Registry**: GitHub Packages をコンテナレジストリとして利用し、ビルド済みのイメージを管理。
+- **Production Management**: プロダクション環境では Docker を採用し、プロセスの常時監視とクラッシュ時の自動復旧（Self-healing）を構成しています。
 
 ## 🛠 技術スタック (Tech Stack)
 
@@ -30,6 +37,8 @@ TypeScriptによる堅牢な型安全性と、Discord.js v14のモダンな機�
 
 ### Infrastructure & Tooling
 
+- **Host**: [Raspberry Pi](https://www.raspberrypi.com/) (Linux)
+- **Networking**: [Tailscale](https://tailscale.com/) (Secure SSH)
 - **Containerization**: [Docker](https://www.docker.com/)
 - **Testing**: [Vitest](https://vitest.dev/)
 - **Environment**: [Dotenv](https://github.com/motdotla/dotenv)
